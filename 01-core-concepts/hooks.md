@@ -5,15 +5,15 @@ Hooks are shell scripts that OpenAB runs at specific points in its own lifecycle
 ## The Three Hooks
 
 ```mermaid
-timeline
-    title OpenAB Startup → Runtime → Shutdown
-    section Boot
-        pre_seed  : Download + extract S3 archives
-        pre_boot  : Run bootstrap scripts (git clone, install deps, etc.)
-    section Runtime
-        (agent pool active)
-    section Shutdown
-        pre_shutdown : Backup to S3, cleanup, notifications
+flowchart LR
+    A["pre_seed\nDownload S3 archives"] --> B["pre_boot\nBootstrap scripts"]
+    B --> C["Runtime\nAgent pool active"]
+    C --> D["pre_shutdown\nBackup and cleanup"]
+
+    style A fill:#dbeafe
+    style B fill:#dbeafe
+    style C fill:#dcfce7
+    style D fill:#fef9c3
 ```
 
 ### `pre_seed`

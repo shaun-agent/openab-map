@@ -20,14 +20,14 @@ sequenceDiagram
     OAB->>OAB: Parse control directives (none)
     OAB->>Discord: Add 👀 reaction
 
-    OAB->>Pool: route(thread_id="42")
+    OAB->>Pool: route thread_id 42
     Pool->>Pool: No session for thread 42
     Pool->>Agent: spawn subprocess
     Agent-->>Pool: ACP initialize handshake
-    Pool->>Agent: session/new {session_id, config}
+    Pool->>Agent: session/new — session_id, config
     Agent-->>Pool: session created
 
-    Pool->>Agent: session/send_message {content, sender}
+    Pool->>Agent: session/send_message — content, sender
     OAB->>Discord: Update reaction 🤔
 
     loop Agent processing

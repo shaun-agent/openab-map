@@ -47,12 +47,12 @@ sequenceDiagram
     participant OAB as OpenAB
     participant CLI as Agent CLI
 
-    OAB->>CLI: fork/exec [kiro-cli, acp, --trust-all-tools]
+    OAB->>CLI: fork/exec kiro-cli acp --trust-all-tools
     CLI-->>OAB: (subprocess running)
-    OAB->>CLI: {"jsonrpc":"2.0","method":"initialize","params":{"capabilities":{...}}}
-    CLI-->>OAB: {"jsonrpc":"2.0","result":{"capabilities":{...}}}
-    OAB->>CLI: {"jsonrpc":"2.0","method":"session/new","params":{"session_id":"abc123","config":{...}}}
-    CLI-->>OAB: {"jsonrpc":"2.0","result":{"session_id":"abc123"}}
+    OAB->>CLI: jsonrpc initialize — capabilities handshake
+    CLI-->>OAB: jsonrpc result — capabilities accepted
+    OAB->>CLI: jsonrpc session/new — session_id + config
+    CLI-->>OAB: jsonrpc result — session_id confirmed
     Note over OAB,CLI: Session is Ready. First message delivered next.
 ```
 

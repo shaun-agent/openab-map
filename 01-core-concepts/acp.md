@@ -27,10 +27,10 @@ sequenceDiagram
     OAB->>A: initialize (capabilities handshake)
     A-->>OAB: initialized (accepted capabilities)
 
-    OAB->>A: session/new {session_id, config}
+    OAB->>A: session/new — session_id, config
     A-->>OAB: session/new result
 
-    OAB->>A: session/send_message {content, sender}
+    OAB->>A: session/send_message — content, sender
     Note over A: Agent processes, may call tools
     A-->>OAB: tool/call_request (ask permission)
     OAB-->>A: tool/call_response (auto-approved or denied)

@@ -8,16 +8,16 @@ There is no shared bus, no inter-pod communication channel, no orchestrator. Bot
 
 ```mermaid
 graph TB
-    subgraph "Discord Channel #engineering"
+    subgraph Discord["Discord Channel: engineering"]
         MSG1["UserA: @Kiro help me plan this feature"]
-        MSG2["Kiro: Here's a plan: [1, 2, 3]"]
+        MSG2["Kiro: Here is a plan: step 1, 2, 3"]
         MSG3["UserA: @Claude review Kiro's plan"]
-        MSG4["Claude: Point 2 has a flaw — [[reply_to:MSG2_ID]]\nHere's why..."]
+        MSG4["Claude: Point 2 has a flaw\nreply_to MSG2\nHere is why..."]
     end
 
-    subgraph "Infrastructure"
-        K[openab-kiro Pod<br/>Session Pool]
-        C[openab-claude Pod<br/>Session Pool]
+    subgraph Infra["Infrastructure"]
+        K["openab-kiro Pod\nSession Pool"]
+        C["openab-claude Pod\nSession Pool"]
     end
 
     MSG1 --> K
@@ -48,7 +48,7 @@ sequenceDiagram
 
     User->>DC: "@Claude critique Kiro's plan"
     DC->>C: MESSAGE_CREATE (mention)
-    C->>DC: "[[reply_to:KIRO_MSG_ID]]\nPoint 2 has a flaw..."
+    C->>DC: reply_to KIRO_MSG_ID — Point 2 has a flaw...
 
     Note over DC: Kiro sees this reply too
     DC->>K: MESSAGE_CREATE (bot message, no @mention)

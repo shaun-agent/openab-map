@@ -6,7 +6,7 @@ OpenAB supports 15+ agent CLIs. Here's how to choose.
 
 ```mermaid
 flowchart TD
-    START[What's your primary LLM provider?] --> ANTHROPIC{Anthropic\nClaude?}
+    START[Which LLM provider?] --> ANTHROPIC{Anthropic\nClaude?}
     START --> OPENAI{OpenAI\nGPT / o-series?}
     START --> GOOGLE{Google\nGemini?}
     START --> FLEX{Provider\nflexible?}

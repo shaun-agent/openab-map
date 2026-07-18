@@ -2,7 +2,7 @@
 
 ```mermaid
 flowchart TD
-    START[What's your thread pattern?]
+    START[What is your thread pattern?]
 
     START --> SINGLE{Single user\nper thread?}
 
