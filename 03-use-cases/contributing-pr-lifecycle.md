@@ -237,9 +237,60 @@ See `docs/canary-tests.md` for the full canary test procedure.
 
 ---
 
+---
+
+## The 5-Ask Framework
+
+Every PR review — whether by a human or a bot — can be triggered into the 5-Ask format (e.g. via the `5️⃣` emoji reaction). It's a structured way to evaluate any proposed change in under 5 minutes.
+
+| # | Question | What you're really checking |
+|---|----------|----------------------------|
+| 1 | **What problem does it solve?** | Is the problem real, clearly scoped, and worth solving now? |
+| 2 | **What alternatives were considered?** | Was the solution space explored, or was the first idea shipped? |
+| 3 | **How does it solve it?** | Is the mechanism sound? Any hidden complexity? |
+| 4 | **What are the limitations and risks?** | Known failure modes, restart behavior, scope boundaries, data loss potential |
+| 5 | **Is this the best approach?** | Given the constraints, is this the lightest viable solution? |
+
+### Example — PR #1165: LINE Group Context Buffer
+
+**1. What problem does it solve?**
+
+In LINE group chats, the bot only receives messages when @mentioned. When a user says "@bot summarize this," the bot has no context of what came before the mention.
+
+**2. What alternatives were considered?**
+
+| Option | Why rejected |
+|--------|-------------|
+| Dispatch all group messages to OpenAB | Requires changing core `admitted turn` semantics |
+| Use LINE Push API to actively participate | Changes product behavior, consumes Push API quota |
+| Persist to long-term memory store | This is short-term context only — persistence is overkill |
+
+**3. How does it solve it?**
+
+The gateway maintains an in-memory `VecDeque` buffer per chat. Non-@mention text messages are stored in the buffer. When the bot is @mentioned, the buffer is drained and prepended as context. Opt-in via `LINE_GROUP_CONTEXT_ENABLED=true`, default off.
+
+**4. What are the limitations and risks?**
+
+- Buffer is lost on restart (pure in-memory)
+- Only buffers text — non-text messages still dropped
+- Sender identified by LINE UID, not display name (display-name lookup out of scope)
+- Single gateway instance — not shared across pods
+
+**5. Is this the best approach?**
+
+Yes. Lightest viable solution given current architecture:
+- Does not change core admission semantics
+- No external storage required
+- Bounded (24h TTL / 100 messages / 8000 characters)
+- Fully opt-in, zero regression risk
+- 8 tests covering all boundary cases
+
+---
+
 ## Further Reading
 
 - `CONTRIBUTING.md` — full contributor guide
 - `docs/review-contract.md` — Review Contract policy (Late Blocker Gate, freeze lifecycle, stopping rule)
 - `.github/workflows/pr-bot-review.yml` — bot review workflow source
 - `docs/adr/pr-contribution-guidelines.md` — ADR for PR structure requirements
+- [Reactions Mapping](../01-core-concepts/reactions-mapping.md) — emoji as agent control panel (includes `5️⃣` trigger)
