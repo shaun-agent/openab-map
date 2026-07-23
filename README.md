@@ -15,7 +15,7 @@ This repo is auto-updated by an agent workflow that watches the `beta` branch of
 | [00 · What is OpenAB](./00-what-is-openab.md) | One-page pitch. The problem, the solution, what it is not. |
 | [01 · Core Concepts](./01-core-concepts/) | The 7 ideas you must internalize before anything clicks. Includes [reactions mapping](./01-core-concepts/reactions-mapping.md) — emoji as agent control panel. |
 | [02 · Mental Models](./02-mental-models/) | How the pieces fit — data flows, topology, sequences. |
-| [03 · Use Cases](./03-use-cases/) | "I want to do X" → here's how. Includes [PR contribution lifecycle](./03-use-cases/contributing-pr-lifecycle.md). |
+| [03 · Use Cases](./03-use-cases/) | "I want to do X" → here's how. Includes [PR contribution lifecycle](./03-use-cases/contributing-pr-lifecycle.md) and the [Jelli governed community bot setup](./03-use-cases/run-a-governed-community-bot.md). |
 | [04 · Decision Trees](./04-decision-trees/) | Should I use X or Y? Structured branching choices. |
 | [05 · Change Digest](./05-change-digest/LATEST.md) | Plain-English summary of recent openab changes. |
 
