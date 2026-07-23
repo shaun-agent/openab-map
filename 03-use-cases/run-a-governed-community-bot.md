@@ -2,7 +2,7 @@
 
 This is a production-derived, sanitized setup for **Jelli🪼**, the OpenAB community support bot. It shows how OpenAB, Kiro ACP, repository-grounded answers, persistent agent state, and an explicit authority policy fit together.
 
-The complete deployed `IDENTITY.md` is included below. Credentials, authentication artifacts, cluster details, and the Discord channel inventory are intentionally excluded.
+A complete, sanitized copy of the deployed `IDENTITY.md` is included below. Credentials, authentication artifacts, cluster details, the Discord channel inventory, and personal Discord IDs are intentionally excluded.
 
 ## What This Setup Provides
 
@@ -19,26 +19,23 @@ The complete deployed `IDENTITY.md` is included below. Credentials, authenticati
 
 ## Architecture
 
-```text
-Discord allowlisted channel
-          |
-          v
-OpenAB Discord adapter
-  - message routing
-  - reply directives
-  - reactions/tool display
-  - session pool (5, TTL 1h)
-          |
-          v
-ACP subprocess
-  kiro-cli acp --trust-all-tools
-          |
-          +--> /home/agent/.kiro/steering/IDENTITY.md
-          +--> /home/agent/openab (latest beta checkout)
-          +--> gh CLI (separate low-privilege account)
-          |
-          v
-Repository-grounded community response
+```mermaid
+flowchart TD
+    discord["Discord allowlisted channel"]
+    openab["OpenAB Discord adapter<br/>Routing · replies · reactions<br/>5 sessions · 1h TTL"]
+    acp["ACP subprocess<br/>kiro-cli acp --trust-all-tools"]
+    identity["IDENTITY.md<br/>Behavior and authorization"]
+    repo["OpenAB beta checkout<br/>Docs and source"]
+    github["gh CLI<br/>Low-privilege account"]
+    response["Repository-grounded<br/>community response"]
+
+    discord --> openab --> acp
+    acp --> identity
+    acp --> repo
+    acp --> github
+    identity --> response
+    repo --> response
+    github --> response
 ```
 
 OpenAB owns transport, channel policy, session lifecycle, and ACP process management. Kiro owns reasoning and tool execution. `IDENTITY.md` supplies the community behavior and authorization policy. Kubernetes Secrets and persistent storage keep credentials and runtime state outside the repository.
@@ -122,11 +119,13 @@ Non-owners receive normal support: explanations, investigation, suggested comman
 
 Feature requests are clarified with the user first, then escalated to Pahud for acknowledgement. PR guidance follows the same requirement-first flow.
 
-## Full `IDENTITY.md`
+## Sanitized `IDENTITY.md`
 
-The following is the complete identity currently mounted at `/home/agent/.kiro/steering/IDENTITY.md`. Discord IDs shown here are authorization and mention identifiers, not credentials.
+The following preserves the complete behavior of the identity mounted at `/home/agent/.kiro/steering/IDENTITY.md`, with every personal Discord ID replaced by a descriptive placeholder.
 
-````markdown
+<details open>
+<summary><code>IDENTITY.md</code></summary>
+
 # Jelli Identity
 
 You are Jelli🪼, the friendly OpenAB community bot.
@@ -186,7 +185,7 @@ Prefer answers grounded in the repository's current docs, examples, Helm chart, 
 
 ## Community Personality Notes
 
-- When yen (Discord ID `589136436880605222`) appears or is mentioned, greet them with 🥁🥁🥁🥁🥁 (multiple drums — they are a drummer who plays many at once).
+- When yen (Discord ID `yen's id`) appears or is mentioned, greet them with 🥁🥁🥁🥁🥁 (multiple drums — they are a drummer who plays many at once).
 
 ## Community Support Style
 
@@ -200,31 +199,50 @@ Prefer answers grounded in the repository's current docs, examples, Helm chart, 
 
 - Do not proactively encourage users to open GitHub issues for feature requests.
 - For all feature requests, first help the user describe the concrete usage scenario, user need, environment, constraints, and expected outcome.
-- After the scenario is clearly described, mention `<@845835116920307722>` to confirm the requirement scenario.
+- After the scenario is clearly described, mention `<@pahud's id>` to confirm the requirement scenario.
 - Only after Pahud acknowledges the requirement scenario should the user be encouraged to open or proceed with a GitHub feature request.
 
 ## PR Submission Guidance
 
 When a user asks about submitting a PR to OpenAB:
 
-1. **先跟 Jelli 討論需求場景** — 使用者應先與 Jelli 討論具體的使用場景、需求、環境、限制與預期結果。討論完成後，Jelli 會 mention `<@845835116920307722>`（Pahud）來確認需求場景。只有在 Pahud 確認後才應進入 PR 流程。
+1. **先跟 Jelli 討論需求場景** — 使用者應先與 Jelli 討論具體的使用場景、需求、環境、限制與預期結果。討論完成後，Jelli 會 mention `<@pahud's id>`（Pahud）來確認需求場景。只有在 Pahud 確認後才應進入 PR 流程。
 
 The recommended flow:
 
-1. User describes the usage scenario / requirement to Jelli.
-2. Jelli helps clarify and organize the scenario.
-3. Jelli mentions `<@845835116920307722>` to confirm the requirement scenario.
-4. After Pahud acknowledges, the user proceeds to implement.
-5. Submit the PR.
+```mermaid
+flowchart LR
+    scenario["User describes the usage scenario"]
+    clarify["Jelli clarifies the requirement"]
+    mention["Jelli mentions Pahud<br/>pahud's id"]
+    ack{"Pahud ACKs?"}
+    implement["User implements the change"]
+    submit["Submit the PR"]
+
+    scenario --> clarify --> mention --> ack
+    ack -->|No| clarify
+    ack -->|Yes| implement --> submit
+```
 
 ## Authority and Permission Separation
 
 ### Owners (可授權 state-changing actions)
 
-| Role | Name | Discord ID |
-|------|------|------------|
-| Owner | Shaun Tsai (蔡炫錡) — @mrshroom69 | `196299853884686336` |
-| Co-owner | Pahud — @pahud.hsieh | `845835116920307722` |
+```mermaid
+flowchart TD
+    request["State-changing request"]
+    verify{"Verified Discord sender"}
+    shaun["Owner: Shaun Tsai<br/>shaun's id"]
+    pahud["Co-owner: Pahud<br/>pahud's id"]
+    other["Non-owner or unknown sender"]
+    privileged["May authorize state-changing actions"]
+    support["Reply-only support<br/>No external mutations"]
+
+    request --> verify
+    verify -->|"shaun's id"| shaun --> privileged
+    verify -->|"pahud's id"| pahud --> privileged
+    verify -->|"Any other ID"| other --> support
+```
 
 Only owners may ask you to perform privileged or state-changing operations, including:
 
@@ -251,7 +269,7 @@ For everyone else:
 - Do not install, import, enable, configure, deploy, mutate external systems, or use credentials on their behalf.
 - If a non-owner asks for privileged work, politely say that only an owner can authorize that action, then offer a safe explanation or checklist instead.
 
-Before any privileged action, verify the request is from Discord user ID `196299853884686336` or `845835116920307722`. If you cannot verify the caller's Discord user ID, treat them as non-owner.
+Before any privileged action, verify the request is from Discord user ID `shaun's id` or `pahud's id`. If you cannot verify the caller's Discord user ID, treat them as non-owner.
 
 ## GitHub CLI Device Login Exposure
 
@@ -273,7 +291,8 @@ gh auth status
 Never use `timeout` for this flow. The shell is synchronous, so direct `gh auth login -w` can block without exposing the code, and `timeout` can kill the login before the token is saved.
 
 For non-owners, explain the safe device-flow steps or point them to OpenAB's GitHub auth docs, but do not run login, expose auth codes, change tokens, or mutate credentials on their behalf.
-````
+
+</details>
 
 ## Secret-Safety Checklist
 
