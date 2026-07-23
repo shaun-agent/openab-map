@@ -22,7 +22,8 @@ flowchart TD
 
     FLEX -->|Best tool support, RBAC| KIRO[kiro-cli acp\nKiro — recommended default]
     FLEX -->|Anthropic preferred| CC
-    FLEX -->|xAI / Grok| GROK[grok agent stdio]
+    FLEX -->|xAI / Grok subscription| GROK[grok agent stdio\nor openab-agent with xAI OAuth]
+    FLEX -->|Moonshot Kimi| KIMI[kimi acp\nKimi Code]
     FLEX -->|Cognition Devin| DEVIN[devin acp]
 ```
 
@@ -32,14 +33,15 @@ flowchart TD
 |-------|---------|---------|---------|
 | **Kiro** | `kiro-cli acp` | Full-featured default, RBAC agents, built-in MCP | Production |
 | **Claude Code** | `claude-agent-acp` | Anthropic models, rich tool use | Production |
-| **openab-agent** | `openab-agent` | Lightweight, skills, MCP client | Beta |
+| **openab-agent** | `openab-agent` | Lightweight, skills, MCP client, xAI/SuperGrok OAuth | Beta |
 | **Codex** | `codex-acp` | OpenAI models, multi-model | Production |
 | **Gemini** | `gemini --acp` | Google models | Production |
 | **OpenCode** | `opencode acp` | OpenAI + MCP, open source | Production |
 | **MiMo-Code** | `mimo acp` | Anthropic Claude, MiMo features | Production |
+| **Kimi Code** | `kimi acp` | Moonshot AI Kimi models, multi-provider | Production |
 | **Copilot CLI** | `copilot --acp --stdio` | GitHub Copilot subscribers | Production |
 | **Cursor** | `cursor-agent acp` | Cursor editor users | Beta |
-| **Grok Build** | `grok agent stdio` | xAI models | Beta |
+| **Grok Build** | `grok agent stdio` | xAI models via Grok CLI | Beta |
 | **Devin** | `devin acp` | Autonomous software engineering | Production |
 | **Hermes** | `hermes-acp` | NousResearch models | Beta |
 | **Pi** | `pi-acp` | Pi agent | Beta |
@@ -76,11 +78,30 @@ Each gets its own Discord bot identity and session pool. See [Deploy Multi-Agent
 - Lightweight (no Node.js runtime)
 - Skills-based (`SKILL.md` files in `.openab/skills/*/`)
 - MCP client support (under active development)
-- Good for: embedding simple agents, custom skills, MCP bridging
+- **xAI / SuperGrok / X Premium OAuth** — device-code login via `openab-agent auth xai`; tokens stored in `~/.openab/agent/auth.json`, refreshed automatically
+
+Provider selection precedence: `OPENAB_AGENT_PROVIDER` env var → `provider/` prefix in `OPENAB_AGENT_MODEL` → prefix in `config.json` model field → auto-detect (Anthropic → Codex). xAI is never auto-detected — you must set `OPENAB_AGENT_PROVIDER=xai` or use an `xai/`-prefixed model.
 
 Not a replacement for full-featured agents like Kiro or Claude Code for complex coding tasks.
+
+## Kimi Code
+
+Kimi Code (`kimi acp`) is Moonshot AI's coding agent. It supports multiple LLM backends (Kimi/Moonshot, Anthropic, OpenAI-compatible, Gemini, Vertex AI) configured in `~/.kimi-code/config.toml`. Authentication is interactive — run `kimi` and enter `/login`.
+
+```toml
+[agent]
+command = "kimi"
+args = ["acp"]
+working_dir = "/home/node"
+```
+
+Note: Kimi reads provider credentials from its own `config.toml` only — it does not pick up API keys from OpenAB's `[agent].env`. Store provider keys in the Kimi config file or credential store.
+
+Full guide: `docs/kimi.md`
 
 ## Further Reading
 
 - `openab-agent/` — source for the native agent
+- `docs/kimi.md` — Kimi Code setup guide
+- `docs/native-agent.md` — openab-agent env vars and OAuth flows
 - Docs: `docs/platforms/` — per-platform setup varies by agent
