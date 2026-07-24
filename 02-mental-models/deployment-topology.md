@@ -129,6 +129,16 @@ graph LR
     AC --- VM2
 ```
 
+## ACP Client Endpoint (v0.10.0-beta.2+)
+
+```mermaid
+flowchart LR
+    C[Zed / Browser] -->|WS(S) /acp| O[openab Pod]
+    K["Non-loopback: bearer key required<br/>Localhost: keyless allowed"] -.-> O
+```
+
+Standard ACP clients can drive the pod directly through its WebSocket endpoint. Set `OPENAB_ACP_AUTH_KEY` on non-loopback binds; keyless access is allowed only on localhost.
+
 ## Local Development
 
 ```bash

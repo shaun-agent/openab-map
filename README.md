@@ -2,7 +2,7 @@
 
 > A living, agent-maintained understanding layer for [OpenAB](https://github.com/openabdev/openab) — the open Agent Client Protocol broker.
 
-This repo is auto-updated by an agent workflow that watches the `beta` branch of openab, diffs what changed, and rewrites affected sections. Every file traces back to a source commit SHA in `.sync-state`.
+This repo is auto-updated by an agent workflow that watches beta releases on openab `main`, diffs what changed, and rewrites affected sections. Every file traces back to a source commit SHA in `.sync-state`.
 
 **If you're new → start at [What is OpenAB](./00-what-is-openab.md)**
 
@@ -15,7 +15,7 @@ This repo is auto-updated by an agent workflow that watches the `beta` branch of
 | [00 · What is OpenAB](./00-what-is-openab.md) | One-page pitch. The problem, the solution, what it is not. |
 | [01 · Core Concepts](./01-core-concepts/) | The 7 ideas you must internalize before anything clicks. Includes [reactions mapping](./01-core-concepts/reactions-mapping.md) — emoji as agent control panel. |
 | [02 · Mental Models](./02-mental-models/) | How the pieces fit — data flows, topology, sequences. |
-| [03 · Use Cases](./03-use-cases/) | "I want to do X" → here's how. Includes [PR contribution lifecycle](./03-use-cases/contributing-pr-lifecycle.md) and the [Jelli governed community bot setup](./03-use-cases/run-a-governed-community-bot.md). |
+| [03 · Use Cases](./03-use-cases/) | "I want to do X" → here's how. Includes [driving an agent from an ACP client](./03-use-cases/drive-agent-from-acp-client.md), [PR contribution lifecycle](./03-use-cases/contributing-pr-lifecycle.md), and the [Jelli governed community bot setup](./03-use-cases/run-a-governed-community-bot.md). |
 | [04 · Decision Trees](./04-decision-trees/) | Should I use X or Y? Structured branching choices. |
 | [05 · Change Digest](./05-change-digest/LATEST.md) | Plain-English summary of recent openab changes. |
 
@@ -39,14 +39,14 @@ openab/beta push or daily schedule
   Auto-merge on consensus
 ```
 
-The agents doing the review run through openab itself — the same system being documented. See [`.github/workflows/sync.yml`](./.github/workflows/sync.yml).
+The agents doing the review run through openab itself — the same system being documented. See the repo's agent sync workflow.
 
 ---
 
 ## Tracked Source
 
 - **Repo:** `openabdev/openab`
-- **Branch:** `beta`
+- **Branch:** `main` (beta release tags, currently `v0.10.0-beta.2`)
 - **Last synced SHA:** see [`.sync-state`](./.sync-state)
 
 ---

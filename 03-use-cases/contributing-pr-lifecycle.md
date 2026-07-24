@@ -1,6 +1,6 @@
 # E2E PR Lifecycle — Contribution to Merge
 
-The full flow for submitting a change to openab, from Discord discussion to merged commit. Based on v0.10.0-beta.1.
+The full flow for submitting a change to openab, from Discord discussion to merged commit. Based on v0.10.0-beta.2.
 
 ---
 
@@ -205,6 +205,22 @@ Hypothetical hardening, architecture preferences, and pre-existing unrelated iss
 | `safe-to-review` | Marks external contributor PR as eligible for bot review | — |
 | `review-contract-exempt` | Exempts PR from Review Contract check | Requires maintainer decision + documented reason |
 | `auto-fix` | Allows review agent to push fixes automatically | Capped at 30 cycles |
+
+> **Fork PR label lag:** Review-event tokens are read-only for fork PRs, so `pending-maintainer`-family label changes come from the hourly reconciliation job instead of immediately. Expect up to about one hour of lag after a review ([PR #1442](https://github.com/openabdev/openab/pull/1442)).
+
+---
+
+## Step 9.5 — Maintainer Take-Over of Fork PRs
+
+GitHub App installation tokens cannot push to fork branches, even when “Allow edits by maintainers” is enabled. When a fork PR needs only small mechanical fixes after its direction is accepted—or its contributor is unresponsive—a maintainer may take over:
+
+1. Agree on the direction before moving the work.
+2. Preserve attribution by cherry-picking contributor commits onto an in-repo branch, or, when squashing, adding `Co-authored-by: username <username@users.noreply.github.com>`.
+3. Credit `@username` in the replacement PR and link the original with `Supersedes #123`.
+4. Finish the remaining nits and merge the replacement.
+5. Close the original PR with a comment that credits the contributor.
+
+The contributor can always choose to finish the work instead; take-over is a convenience, not a review bypass. PR #1443 taking over #1440 is the live example. See upstream `CONTRIBUTING.md`, “Maintainer Take-Over of Fork PRs.”
 
 ---
 

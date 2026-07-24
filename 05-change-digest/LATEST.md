@@ -1,69 +1,73 @@
 # Latest Change Digest
 
-> Auto-updated. Source range: `2e3292b` → `6859733` (openab `main`)
+> Auto-updated. Source range: `6859733` → `9672700` (openab `main`)
 > See [`.sync-state`](../.sync-state)
 
 ---
 
-## v0.9.0 Released + v0.10.0-beta.1 Tagged
+## v0.10.0-beta.2 Released
 
-openab hit its v0.9.0 stable release in this window and immediately tagged v0.10.0-beta.1.
+The Helm chart `version` and `appVersion` moved from v0.10.0-beta.1 to v0.10.0-beta.2. This release captures the ACP WebSocket server and Feishu unified-mode WebSocket fix below.
 
 ---
 
-## New: Kimi Code CLI Backend
+## New: OpenAB is now an ACP Server — WebSocket `/acp` endpoint
 
-**Commit:** `654bf97` — feat: add Kimi Code CLI backend
+**Commit:** `2c5b549` — [PR #1418](https://github.com/openabdev/openab/pull/1418)
 
-Kimi Code (`kimi acp`) from Moonshot AI is now a supported agent backend. It speaks ACP natively — no adapter needed.
-
-**What changed in the map:** [Which Agent?](../04-decision-trees/which-agent.md) updated with Kimi in the decision tree and quick-reference table.
+OpenAB now accepts standard ACP clients over `GET /acp`, reversing its historical client-only direction while preserving the existing stdio path to agent subprocesses.
 
 **Key things to know:**
-- Command: `kimi acp`, working dir `/home/node`
-- Auth: interactive — run `kimi` and enter `/login` inside the container
-- Supports multiple LLM providers via `~/.kimi-code/config.toml` (Kimi/Moonshot, Anthropic, OpenAI-compatible, Gemini, Vertex AI)
-- Provider credentials must be in Kimi's own config — not in OpenAB's `[agent].env`
-- Helm image tag: `openab:<tag>-kimi`
-- Full guide: `docs/kimi.md`
+- Both `openab-gateway` and unified `openab run` serve JSON-RPC 2.0 over WebSocket with subprotocol `acp.v1`.
+- Enable it with the `acp` Cargo feature and `OPENAB_ACP_ENABLED=true`; `acp` is included in `unified`.
+- Authentication is fail-closed: non-loopback binds require `OPENAB_ACP_AUTH_KEY`, while browser keyless access also requires an exact `OPENAB_ACP_ALLOWED_ORIGINS` match.
+- ACP traffic uses synthetic sender `acp_client`, which must pass broker identity admission.
+- Phase 1 supports `initialize`, `session/new`, `session/resume`, `session/prompt`, text `session/update`, and partial `session/cancel`; agent-to-client requests and other method families are deferred.
+- `session/resume` returns `{}` immediately for any well-formed `sess_<uuid>` without checking liveness or replaying history. If the four-hour-default pool TTL has expired the session, the next prompt starts fresh and its first reply carries a `Session expired` prefix.
+- Limits are 128 sessions per connection, 32 in-flight prompts, and 1 MiB inbound frames.
+- Phase 2 targets permission requests, progressive streaming, structured `tool_call` updates, and MCP-over-ACP; Phase 3 and later add history replay, thought chunks and plans, richer content, fs/terminal methods, session administration, and Streamable HTTP.
+
+**What changed in the map:**
+- Added [Drive Your Agent from an ACP Client](../03-use-cases/drive-agent-from-acp-client.md).
+- Reframed [ACP](../01-core-concepts/acp.md) around OpenAB's client and server roles.
+- Extended the [What is OpenAB?](../00-what-is-openab.md) architecture diagram.
+- Clarified the non-chat endpoint in [Adapters](../01-core-concepts/adapters.md).
+- Added ACP guidance to [Which Adapter?](../04-decision-trees/which-adapter.md).
+- Added the endpoint to [Deployment Topology](../02-mental-models/deployment-topology.md).
 
 ---
 
-## New: xAI / SuperGrok / X Premium OAuth in openab-agent
+## Fix: Feishu WebSocket now starts in unified mode
 
-**Commit:** `7faa937` — feat(openab-agent): xAI subscription login via device-code OAuth
+**Commit:** `421f3ce` — PR #1443
 
-The native `openab-agent` now supports signing into xAI with a SuperGrok or X Premium subscription — no API key required.
+Unified `openab run` previously mounted only the Feishu webhook route and never started the WebSocket long-connection client. Because `FEISHU_CONNECTION_MODE=websocket` is the default, unified deployments using that default received no events.
 
-**What changed in the map:** [Which Agent?](../04-decision-trees/which-agent.md) updated with xAI OAuth notes in the openab-agent section.
+The unified binary now starts the WebSocket client, with a bounded 15-second bot-identity resolution timeout, graceful shutdown, and a card-streaming idle reaper. Upstream `docs/feishu.md` now gates Unified Mode at v0.9.0+ and WebSocket support at v0.10.0+.
 
-**Key things to know:**
-- Run `openab-agent auth xai` for device-code flow (works headless via `kubectl exec`)
-- Tokens stored in `~/.openab/agent/auth.json`, auto-refreshed
-- Select with `OPENAB_AGENT_PROVIDER=xai` or `OPENAB_AGENT_MODEL=xai/grok-4.5`
-- xAI is **not** auto-detected — you must explicitly select it
-- `OPENAB_AGENT_XAI_MODEL` (default `grok-4.5`) and `OPENAB_AGENT_XAI_BASE_URL` are new env vars
-- Config resolution precedence clarified: `OPENAB_AGENT_PROVIDER` > model prefix in env > model prefix in `config.json` > auto-detect
+**Map impact:** None beyond this digest; the map never documented the broken behavior.
 
 ---
 
-## New: Review Contract (contributor workflow)
+## New: Maintainer take-over policy for fork PRs
 
-**Commit:** `f8e9156` — docs(review): add Review Contract policy
+**Commit:** `136554e` — PR #1444
 
-Every PR to openab must now include a `## Review Contract` section with: Goal, Non-goals, Accepted Residual Risks, Acceptance Criteria, and Follow-ups. A GitHub Actions workflow validates structure automatically.
+When a fork PR needs only small mechanical fixes after direction is accepted, or its contributor becomes unresponsive, a maintainer may move the work to an in-repo branch. Attribution must be preserved through contributor commits or a `Co-authored-by` trailer, the replacement PR must credit the contributor and link the superseded PR, and the original must close with credit. Contributors can always choose to finish the work themselves.
 
-**Impact on contributors:**
-- Mandatory for all PRs (except those labelled `review-contract-exempt` by a maintainer)
-- Round 1 is a full review + contract freeze; later rounds are incremental
-- Post-freeze blockers must pass the Late Blocker Gate (concrete evidence of broken acceptance criteria, unachieved goal, or new correctness/security/data-loss defect)
-- Full policy: `docs/review-contract.md`
+PR #1443 taking over #1440 is the live example.
+
+**What changed in the map:** [E2E PR Lifecycle](../03-use-cases/contributing-pr-lifecycle.md) now summarizes the policy.
 
 ---
 
-## Minor: Grok CLI version bump
+## Minor: fork-PR label writes moved to hourly reconciliation
 
-`chore: upgrade Grok CLI to version 0.2.106` — no user-facing behavior change.
+**Commit:** `fc22758` — PR #1442
+
+GitHub App tokens are read-only for `pull_request_review` events from forks, so immediate label writes were failing with 403. The label-writing job now runs immediately only for same-repository branches; fork PRs rely on the existing hourly reconciliation job and may show up to about one hour of label lag.
+
+**What changed in the map:** [E2E PR Lifecycle](../03-use-cases/contributing-pr-lifecycle.md) now calls out the delay.
 
 ---
 

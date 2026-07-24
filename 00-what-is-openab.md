@@ -2,7 +2,7 @@
 
 ## The One-Line Answer
 
-OpenAB is a secure, cloud-native **message broker** that connects any chat platform (Discord, Slack, Telegram, Teams…) to any coding agent CLI (Claude Code, Kiro, Codex, Gemini…) using a single open protocol called ACP.
+OpenAB is a secure, cloud-native **message broker** that connects any chat platform—or any standard ACP client (Zed, JetBrains, a browser)—to any coding agent CLI (Claude Code, Kiro, Codex, Gemini…) using ACP.
 
 ## The Problem It Solves
 
@@ -38,6 +38,12 @@ graph LR
         TP[Teams / LINE / etc.]
     end
 
+    subgraph "ACP Clients"
+        Z[Zed]
+        J[JetBrains]
+        BR[Browser]
+    end
+
     subgraph OpenAB Pod
         B[Broker<br/>openab binary]
         SP[Session Pool]
@@ -54,6 +60,9 @@ graph LR
     S -->|Socket Mode| B
     T -->|Gateway WebSocket| B
     TP -->|Gateway WebSocket| B
+    Z -->|WS(S) /acp JSON-RPC| B
+    J -->|WS(S) /acp JSON-RPC| B
+    BR -->|WS(S) /acp JSON-RPC| B
 
     B --> SP
     SP -->|ACP stdio JSON-RPC| CC
@@ -63,6 +72,8 @@ graph LR
 ```
 
 Each agent is a subprocess. Each conversation thread is a session. OpenAB manages the pool and the routing. The agents don't know OpenAB exists.
+
+Since v0.10.0-beta.2, OpenAB is also an ACP server. IDEs and browsers can drive agents directly, with no chat platform in the loop.
 
 ## Who Uses OpenAB
 

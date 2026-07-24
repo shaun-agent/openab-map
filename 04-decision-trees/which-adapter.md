@@ -1,5 +1,7 @@
 # Which Adapter? Native vs Gateway
 
+> **Not a chat platform at all?** To drive an agent from an IDE, browser, or CLI, use the ACP server endpoint at `/acp`. It requires v0.10.0-beta.2+ and `OPENAB_ACP_ENABLED=true`; see [Drive Your Agent from an ACP Client](../03-use-cases/drive-agent-from-acp-client.md).
+
 ```mermaid
 flowchart TD
     PLAT[Which platform?] --> DC{Discord?}
@@ -40,7 +42,7 @@ FROM rust:1-bookworm AS builder
 RUN cargo build --features unified
 ```
 
-One binary, one pod, handles everything. Simplest ops. Use this unless you have a reason not to.
+One binary, one pod, handles everything. Simplest ops. The `unified` feature bundle includes `acp`. Use this unless you have a reason not to.
 
 **Separate gateway pod:**
 ```yaml

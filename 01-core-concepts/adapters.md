@@ -43,6 +43,12 @@ graph TD
 
 **Tier 2** adapters run as the `openab-gateway` binary (separate pod or same pod via unified build). Webhook platforms send events to the gateway, which normalizes them and forwards to OpenAB's main broker over an internal WebSocket.
 
+## Not Just Chat: the ACP Endpoint
+
+The gateway and unified binary also expose `GET /acp` when enabled. This is an inbound ACP-server endpoint for IDEs, browsers, and other ACP clients—not a chat adapter or another platform feature.
+
+ACP traffic enters the trust registry as platform `"acp"` with synthetic sender `acp_client`. See [Drive Your Agent from an ACP Client](../03-use-cases/drive-agent-from-acp-client.md) for setup and admission rules.
+
 ## The `ChatAdapter` Trait
 
 All adapters implement the same Rust trait (`crates/openab-core/src/adapter.rs`). The trait defines:
