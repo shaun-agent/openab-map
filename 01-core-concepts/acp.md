@@ -4,9 +4,12 @@ ACP is the contract between OpenAB and agents. If you understand ACP, you unders
 
 ## What It Is
 
-ACP is **JSON-RPC 2.0 over stdio pipes**. Not HTTP. Not WebSockets. Just stdin/stdout.
+ACP is a **JSON-RPC 2.0** protocol. Its classic transport uses stdio pipes: OpenAB spawns an agent subprocess, writes JSON to its stdin, and reads JSON from its stdout.
 
-OpenAB spawns your agent as a subprocess and speaks to it by writing JSON to its stdin. The agent writes JSON to stdout. OpenAB reads it. That's the entire transport.
+As of v0.10.0-beta.2, OpenAB speaks ACP in two roles:
+
+- **ACP client** — spawns agent subprocesses and communicates over stdio. This unchanged path remains the main agent integration.
+- **ACP server** — accepts external ACP clients at `GET /acp` over WebSocket.
 
 ```
 OpenAB process
@@ -15,7 +18,7 @@ OpenAB process
     └── stdout ←──  agent subprocess
 ```
 
-This means any CLI that can read from stdin and write to stdout can be an ACP agent. No network ports. No authentication to OpenAB. No SDK required.
+For the client role, any CLI that can read from stdin and write to stdout can be an ACP agent. No network ports, OpenAB authentication, or SDK are required on this stdio path.
 
 ## Message Flow
 
@@ -91,6 +94,14 @@ args = ["acp", "--trust-all-tools"]
 
 That's it. OpenAB spawns the subprocess and speaks ACP to it.
 
+## OpenAB as an ACP Server (v0.10.0-beta.2+)
+
+Both `openab-gateway` and unified `openab run` can expose `GET /acp` for standard ACP clients over WebSocket. Enable the `acp` Cargo feature—already included in `unified`—and set `OPENAB_ACP_ENABLED=true`.
+
+Transport authentication is fail-closed: non-loopback binds must set `OPENAB_ACP_AUTH_KEY`, or OpenAB refuses to mount `/acp`. Phase 1 provides the chat-focused subset: initialization, new sessions, immediate resume acknowledgement without a liveness check or history replay, prompts, text updates, and partial cancellation.
+
+See [Drive Your Agent from an ACP Client](../03-use-cases/drive-agent-from-acp-client.md) for authentication, browser access, supported methods, limits, and known limitations.
+
 ## Tool Call Auto-Reply
 
 By default, OpenAB auto-approves all tool calls from the agent. This is what `--trust-all-tools` signals. If an agent requests a sensitive tool call without this flag, OpenAB can be configured to prompt a human (via a slash command) before replying.
@@ -104,3 +115,5 @@ If the agent emits a `thinking` content block (chain-of-thought), OpenAB passes 
 - Source: `crates/openab-core/src/acp/` — protocol types and session lifecycle
 - [Sessions](./sessions.md) — how ACP sessions map to conversation threads
 - [Which Agent?](../04-decision-trees/which-agent.md) — choosing an agent CLI
+- [Drive Your Agent from an ACP Client](../03-use-cases/drive-agent-from-acp-client.md) — WebSocket server setup
+- Upstream: `docs/adr/acp-server-websocket-base.md` — Phase 1 ACP server decision
