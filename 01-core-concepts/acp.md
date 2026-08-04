@@ -100,6 +100,8 @@ Both `openab-gateway` and unified `openab run` can expose `GET /acp` for standar
 
 Transport authentication is fail-closed: non-loopback binds must set `OPENAB_ACP_AUTH_KEY`, or OpenAB refuses to mount `/acp`. Phase 1 provides the chat-focused subset: initialization, new sessions, immediate resume acknowledgement without a liveness check or history replay, prompts, text updates, and partial cancellation.
 
+**Unreleased on `main` after v0.10.0-beta.2**, the same `/acp` WebSocket also carries a reverse MCP tunnel for [browser control](../03-use-cases/browser-control-from-chat.md).
+
 See [Drive Your Agent from an ACP Client](../03-use-cases/drive-agent-from-acp-client.md) for authentication, browser access, supported methods, limits, and known limitations.
 
 ## Tool Call Auto-Reply
@@ -117,3 +119,4 @@ If the agent emits a `thinking` content block (chain-of-thought), OpenAB passes 
 - [Which Agent?](../04-decision-trees/which-agent.md) — choosing an agent CLI
 - [Drive Your Agent from an ACP Client](../03-use-cases/drive-agent-from-acp-client.md) — WebSocket server setup
 - Upstream: `docs/adr/acp-server-websocket-base.md` — Phase 1 ACP server decision
+- Upstream: `docs/adr/acp-server-websocket-reverse-mcp.md` — accepted reverse MCP tunnel design

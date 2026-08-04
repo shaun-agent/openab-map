@@ -15,6 +15,7 @@ graph TD
         GW[openab-gateway binary]
         T[Telegram]
         L[LINE]
+        LW[LINE WORKS]
         F[Feishu / Lark]
         GC[Google Chat]
         WC[WeCom]
@@ -31,6 +32,7 @@ graph TD
     GW -->|WebSocket| B
     T --> GW
     L --> GW
+    LW --> GW
     F --> GW
     GC --> GW
     WC --> GW
@@ -90,14 +92,16 @@ The gateway pattern (Tier 2) is the recommended path for new webhook-based platf
 
 ## Platform Feature Matrix
 
-| Feature | Discord | Slack | Telegram | LINE | Feishu | Teams |
-|---------|---------|-------|----------|------|--------|-------|
-| Threads | Native | Native | Simulated | Simulated | Native | Native |
-| Reactions | Yes | Yes | No | No | Yes | Limited |
-| Slash commands | Yes | No | No | No | No | No |
-| Voice/STT | Yes | No | No | No | No | No |
-| Edit messages | Yes | Yes | No | No | Yes | Yes |
-| File upload | Yes | Yes | Yes | Yes | Yes | Yes |
+> **LINE WORKS is unreleased — on `main` after v0.10.0-beta.2.** It is a gateway adapter.
+
+| Feature | Discord | Slack | Telegram | LINE | LINE WORKS | Feishu | Teams |
+|---------|---------|-------|----------|------|------------|--------|-------|
+| Threads | Native | Native | Simulated | Simulated | No — flat talks/channels | Native | Native |
+| Reactions | Yes | Yes | No | No | No | Yes | Limited |
+| Slash commands | Yes | No | No | No | No | No | No |
+| Voice/STT | Yes | No | No | No | Yes — audio attachments | No | No |
+| Edit messages | Yes | Yes | No | No | No — immutable; streaming off | Yes | Yes |
+| File upload | Yes | Yes | Yes | Yes | Inbound only — no outbound upload | Yes | Yes |
 
 ## Further Reading
 

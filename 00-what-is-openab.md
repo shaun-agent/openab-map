@@ -2,7 +2,7 @@
 
 ## The One-Line Answer
 
-OpenAB is a secure, cloud-native **message broker** that connects any chat platform—or any standard ACP client (Zed, JetBrains, a browser)—to any coding agent CLI (Claude Code, Kiro, Codex, Gemini…) using ACP.
+OpenAB is a secure, cloud-native **message broker** that connects any chat platform or standard ACP client (Zed, JetBrains, a browser) to any coding agent CLI (Claude Code, Kiro, Codex, Gemini…) using ACP—and, via its MCP facade, connects that agent to external capabilities.
 
 ## The Problem It Solves
 
@@ -22,7 +22,7 @@ Building all of that from scratch is a project. OpenAB is that project, done onc
 |----------|----------------|
 | An orchestration framework | It doesn't chain agents or manage workflows. You do that. |
 | A memory system | It doesn't store conversation history beyond the active session. You choose your memory layer. |
-| An agent runtime | It doesn't run LLMs. It connects your agent to your chat platform. |
+| An agent runtime | It doesn't run LLMs. It connects your agent to your chat platform, ACP clients, and—via the MCP facade—external capabilities. |
 | A prompt injector | It doesn't modify what your agent sees. The pipe is transparent. |
 
 This is deliberate. OpenAB stays thin so you can own the layers above it.
@@ -47,6 +47,7 @@ graph LR
     subgraph OpenAB Pod
         B[Broker<br/>openab binary]
         SP[Session Pool]
+        MF["MCP Facade<br/>loopback :8848<br/>2 meta-tools<br/>unreleased on main"]
     end
 
     subgraph Agents
@@ -69,7 +70,13 @@ graph LR
     SP -->|ACP stdio JSON-RPC| K
     SP -->|ACP stdio JSON-RPC| C
     SP -->|ACP stdio JSON-RPC| OA
+    CC <--> MF
+    K <--> MF
+    C <--> MF
+    OA <--> MF
 ```
+
+The MCP Facade node is **unreleased — on `main` after v0.10.0-beta.2**.
 
 Each agent is a subprocess. Each conversation thread is a session. OpenAB manages the pool and the routing. The agents don't know OpenAB exists.
 

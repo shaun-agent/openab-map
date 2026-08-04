@@ -6,7 +6,7 @@
 flowchart TD
     PLAT[Which platform?] --> DC{Discord?}
     PLAT --> SL{Slack?}
-    PLAT --> OTHERS{Telegram / LINE\nFeishu / Teams\nGoogle Chat / WeCom?}
+    PLAT --> OTHERS{Telegram / LINE / LINE WORKS\nFeishu / Teams\nGoogle Chat / WeCom?}
 
     DC --> DC_YES[Native adapter\nbuilt into openab binary\nno gateway needed]
     SL --> SL_YES[Native adapter\nbuilt into openab binary\nno gateway needed]
@@ -28,6 +28,7 @@ flowchart TD
 You need the gateway when running any of:
 - Telegram
 - LINE
+- LINE WORKS *(unreleased — on `main` after v0.10.0-beta.2)*
 - Feishu / Lark
 - Google Chat
 - WeCom
@@ -69,6 +70,7 @@ Use separate pods when:
 | Slack | ✓ | ✓ | — | — | ✓ |
 | Telegram | simulated | — | — | ✓ | — |
 | LINE | simulated | — | — | — | — |
+| LINE WORKS *(unreleased — on `main` after v0.10.0-beta.2)* | — | — | — | ✓ | — |
 | Feishu | ✓ | ✓ | — | — | ✓ |
 | Teams | ✓ | limited | — | — | ✓ |
 

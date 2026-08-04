@@ -1,73 +1,80 @@
 # Latest Change Digest
 
-> Auto-updated. Source range: `6859733` → `9672700` (openab `main`)
+> Auto-updated. Source range: `9672700` → `3ace7de3` (openab `main`)
+> **Unreleased on `main` after v0.10.0-beta.2 — expected in the next beta.**
 > See [`.sync-state`](../.sync-state)
 
 ---
 
-## v0.10.0-beta.2 Released
+## New subsystem: OAB MCP Facade
 
-The Helm chart `version` and `appVersion` moved from v0.10.0-beta.1 to v0.10.0-beta.2. This release captures the ACP WebSocket server and Feishu unified-mode WebSocket fix below.
+**PRs:** #1448, #1453, #1454, #1450, #1446
 
----
-
-## New: OpenAB is now an ACP Server — WebSocket `/acp` endpoint
-
-**Commit:** `2c5b549` — [PR #1418](https://github.com/openabdev/openab/pull/1418)
-
-OpenAB now accepts standard ACP clients over `GET /acp`, reversing its historical client-only direction while preserving the existing stdio path to agent subprocesses.
+OpenAB now has a loopback Streamable HTTP MCP facade that presents every configured downstream provider through only `search_capabilities` and `execute_capability`. Providers come from layered `mcp.json`; filters, JSON-Schema validation, timeouts, secret redaction, and `mcp.audit` logging apply before native downstream `tools/call` dispatch.
 
 **Key things to know:**
-- Both `openab-gateway` and unified `openab run` serve JSON-RPC 2.0 over WebSocket with subprotocol `acp.v1`.
-- Enable it with the `acp` Cargo feature and `OPENAB_ACP_ENABLED=true`; `acp` is included in `unified`.
-- Authentication is fail-closed: non-loopback binds require `OPENAB_ACP_AUTH_KEY`, while browser keyless access also requires an exact `OPENAB_ACP_ALLOWED_ORIGINS` match.
-- ACP traffic uses synthetic sender `acp_client`, which must pass broker identity admission.
-- Phase 1 supports `initialize`, `session/new`, `session/resume`, `session/prompt`, text `session/update`, and partial `session/cancel`; agent-to-client requests and other method families are deferred.
-- `session/resume` returns `{}` immediately for any well-formed `sess_<uuid>` without checking liveness or replaying history. If the four-hour-default pool TTL has expired the session, the next prompt starts fresh and its first reply carries a `Session expired` prefix.
-- Limits are 128 sessions per connection, 32 in-flight prompts, and 1 MiB inbound frames.
-- Phase 2 targets permission requests, progressive streaming, structured `tool_call` updates, and MCP-over-ACP; Phase 3 and later add history replay, thought chunks and plans, richer content, fs/terminal methods, session administration, and Streamable HTTP.
+- `[mcp]` enables `127.0.0.1:8848/mcp`; non-loopback binds are refused, and a config containing only `[mcp]` supports facade-only `openab run` deployments.
+- The facade has no general auth layer. The host or pod is the trust boundary, while session-bound sources require the broker-minted `OPENAB_SESSION_TOKEN` bearer.
+- OpenAB writes `.openab/mcp-facade.json` but never edits a coding CLI's own MCP settings.
+- `mcp.audit` is a bare tracing target: `RUST_LOG=openab=debug` misses it unless `mcp.audit=info` is added explicitly.
+- It complements rather than replaces octobroker: pod-level personal capabilities can include fleet-level octobroker as a downstream.
 
 **What changed in the map:**
-- Added [Drive Your Agent from an ACP Client](../03-use-cases/drive-agent-from-acp-client.md).
-- Reframed [ACP](../01-core-concepts/acp.md) around OpenAB's client and server roles.
-- Extended the [What is OpenAB?](../00-what-is-openab.md) architecture diagram.
-- Clarified the non-chat endpoint in [Adapters](../01-core-concepts/adapters.md).
-- Added ACP guidance to [Which Adapter?](../04-decision-trees/which-adapter.md).
-- Added the endpoint to [Deployment Topology](../02-mental-models/deployment-topology.md).
+- Added [OAB MCP Facade](../01-core-concepts/mcp-facade.md).
+- Added both new network surfaces to [Trust Model](../01-core-concepts/trust-model.md).
+- Added the facade to the [What is OpenAB?](../00-what-is-openab.md) architecture.
 
 ---
 
-## Fix: Feishu WebSocket now starts in unified mode
+## New: Browser control via MCP-over-ACP tunnel
 
-**Commit:** `421f3ce` — PR #1443
+**PR:** #1447
 
-Unified `openab run` previously mounted only the Feishu webhook route and never started the WebSocket long-connection client. Because `FEISHU_CONNECTION_MODE=websocket` is the default, unified deployments using that default received no events.
+ACP clients can now publish `type: "acp"` MCP servers over the existing `/acp` WebSocket. The katashiro browser extension uses the reverse tunnel to provide five DOM-semantic tools—read DOM, screenshot, navigate, click, and type—which the agent discovers as session-aware `openab-browser` capabilities behind the facade.
 
-The unified binary now starts the WebSocket client, with a bounded 15-second bot-identity resolution timeout, graceful shutdown, and a card-streaming idle reaper. Upstream `docs/feishu.md` now gates Unified Mode at v0.9.0+ and WebSocket support at v0.10.0+.
+**Key things to know:**
+- Browser control requires `[mcp]`; without it, nothing starts.
+- Agent-to-client request routing exists only as tunnel plumbing. General permission relay, structured tool updates, progressive streaming, and effective backend cancellation remain open.
+- The frame cap is now 8 MiB overall for screenshots, while method-bearing frames remain limited to 1 MiB.
+- Proxy mode and `openab browser-bridge` / `OPENAB_BROWSER_MODE` were removed before merge. The facade is the only delivery path.
+- The canonical ADR is now `docs/adr/acp-server-websocket-reverse-mcp.md`; the earlier browser ADR path was deleted.
 
-**Map impact:** None beyond this digest; the map never documented the broken behavior.
-
----
-
-## New: Maintainer take-over policy for fork PRs
-
-**Commit:** `136554e` — PR #1444
-
-When a fork PR needs only small mechanical fixes after direction is accepted, or its contributor becomes unresponsive, a maintainer may move the work to an in-repo branch. Attribution must be preserved through contributor commits or a `Co-authored-by` trailer, the replacement PR must credit the contributor and link the superseded PR, and the original must close with credit. Contributors can always choose to finish the work themselves.
-
-PR #1443 taking over #1440 is the live example.
-
-**What changed in the map:** [E2E PR Lifecycle](../03-use-cases/contributing-pr-lifecycle.md) now summarizes the policy.
+**What changed in the map:**
+- Added [Let Your Agent Drive the Browser](../03-use-cases/browser-control-from-chat.md).
+- Updated [Drive Your Agent from an ACP Client](../03-use-cases/drive-agent-from-acp-client.md) with the tunnel, limits, and remaining roadmap.
+- Updated [ACP](../01-core-concepts/acp.md) and fixed its ADR link.
 
 ---
 
-## Minor: fork-PR label writes moved to hourly reconciliation
+## New: Native Gmail adapter
 
-**Commit:** `fc22758` — PR #1442
+**PRs:** #1449, #1455
 
-GitHub App tokens are read-only for `pull_request_review` events from forks, so immediate label writes were failing with 403. The label-writing job now runs immediately only for same-repository branches; fork PRs rely on the existing hourly reconciliation job and may show up to about one hour of label lag.
+The hosted `gmailmcp.googleapis.com` route was abandoned because it requires Workspace Developer Preview enrollment and rejects consumer accounts. The native adapter instead serves six read/draft-only tools over Gmail's GA REST API: `search_threads`, `get_thread`, `get_message`, `list_labels`, `list_drafts`, and `create_draft`; it never sends mail.
 
-**What changed in the map:** [E2E PR Lifecycle](../03-use-cases/contributing-pr-lifecycle.md) now calls out the delay.
+Use `openab mcp gmail-native login` for paste-back OAuth and `openab mcp gmail-native serve --listen 127.0.0.1:8850` for development. `GMAIL_OAUTH_CLIENT_ID` is required, while `GMAIL_OAUTH_CLIENT_SECRET` is optional in code for public clients. Google's Web and Desktop client types are both issued a secret and require it at the token endpoint, so in practice set both. The refresh token is stored under `gmail-native` in `~/.openab/agent/auth.json` with mode 0600. The recommended production shape registers all six tools behind the facade with an explicit include filter.
+
+**What changed in the map:** [OAB MCP Facade](../01-core-concepts/mcp-facade.md) documents Gmail as a downstream and links the upstream guide.
+
+---
+
+## New platform: LINE WORKS
+
+**PR:** #1456
+
+LINE WORKS joins the gateway tier with signed webhook receipt and REST sends. It supports flat 1:1 talks and channels, inbound image/audio/file attachments, audio-attachment STT, flexible-template rich messages, and receipt acknowledgements; outbound file upload is not implemented. It has no threads, reactions, or message editing; streaming is forced off. User access remains deny-all unless explicitly allowed.
+
+**What changed in the map:** Added LINE WORKS to [Adapters](../01-core-concepts/adapters.md) and [Which Adapter?](../04-decision-trees/which-adapter.md), including its capability constraints.
+
+---
+
+## Docs: CLI conventions
+
+**PR:** #1452
+
+Top-level verbs act on the bot itself (`run`, `setup`, `set`, `get`), while noun namespaces act on subsystems (`openab mcp <addon> <action>`). Production serving is config-driven; namespace `serve` subcommands are for development only.
+
+**What changed in the map:** The convention is summarized in [OAB MCP Facade](../01-core-concepts/mcp-facade.md).
 
 ---
 

@@ -65,15 +65,15 @@ Keys never belong in URLs. Query-string authentication such as `?token=` is not 
 | Method | Status | Phase 1 behavior |
 |--------|--------|------------------|
 | `initialize` | Supported | Uses wire `protocolVersion: 1`, official agent capabilities, and `authMethods: []`. |
-| `session/new` | Supported | Accepts `{cwd, mcpServers}` and returns `{sessionId}`. |
-| `session/resume` | Supported | Accepts `{sessionId, cwd}` and immediately returns `{}` for any well-formed `sess_<uuid>`; it does not check session liveness or replay history. |
+| `session/new` | Supported | Accepts `{cwd, mcpServers}` and returns `{sessionId}`. Unreleased on `main` after v0.10.0-beta.2, `mcpServers` accepts `type: "acp"` entries for the reverse MCP tunnel. |
+| `session/resume` | Supported | Accepts `{sessionId, cwd, mcpServers}` and immediately returns `{}` for any well-formed `sess_<uuid>`; it does not check session liveness or replay history. Unreleased on `main` after v0.10.0-beta.2, an explicitly supplied `mcpServers` array is authoritative: registered servers absent from it are withdrawn, and `[]` withdraws all; omitted, null, or malformed `mcpServers` leaves registrations unchanged. |
 | `session/prompt` | Supported | Sends `session/update` notifications and returns snake_case `stopReason`: `end_turn` or `cancelled`. |
 | `session/cancel` | Partial | Ends the waiter as `cancelled`, but does not stop backend agent work. |
 | `session/update` | Agent → client | Sends text-only `agent_message_chunk` notifications. |
 | `authenticate`, `logout` | Not supported | Not part of the Phase 1 chat subset. |
 | `session/load` | Not supported | History replay is deferred. |
 | `session/close`, `session/list`, `session/delete`, `session/set_config_option`, `session/set_mode` | Not supported | Session administration is deferred. |
-| `session/request_permission` | Not supported | There is no agent-to-client request direction yet. |
+| `session/request_permission` | Not supported | Unreleased on `main` after v0.10.0-beta.2, agent-to-client request routing exists only for MCP tunnel traffic; permission requests are not wired to it. |
 | `fs/*`, `terminal/*` | Not supported | Deferred beyond Phase 1. |
 
 Phase 1 conforms to official ACP Schema v1.19.0. A whole reply currently arrives as one terminal `agent_message_chunk` before `session/prompt` returns. ACP clients receive only the raw answer text; tool activity is not surfaced in Phase 1.
@@ -90,7 +90,9 @@ Hard limits per WebSocket connection:
 
 - 128 sessions across `session/new` and `session/resume`
 - 32 in-flight prompts; overflow returns JSON-RPC error `-32000`
-- 1 MiB maximum inbound frame
+- **Unreleased on `main` after v0.10.0-beta.2:** 8 MiB overall ACP frame cap for screenshot tool results; method-bearing frames remain capped at 1 MiB
+
+For the reverse MCP tunnel, also unreleased on `main` after v0.10.0-beta.2, `session/new` and `session/resume` accept `type: "acp"` entries in `mcpServers`. On resume, only an explicitly present `mcpServers` array is authoritative: channel-registered servers absent from that array are withdrawn, and `[]` withdraws everything. If `mcpServers` is omitted, null, or malformed, nothing is withdrawn. The tunnel allows 8 servers per session, 64 in-flight establishes, a 30-second connect/handshake timeout, and tunnel calls bounded by `[mcp] tunnel_timeout_seconds` (default 170 seconds).
 
 Phase 1 limitations:
 
@@ -105,13 +107,15 @@ Run the uv-compatible `scripts/acp-ws-smoke.py` verification tool. It performs s
 
 ## Roadmap
 
-**Phase 2 critical path:**
-- Agent-to-client request direction and `session/request_permission`
-- Progressive streaming and structured `tool_call` updates
-- MCP-over-ACP tunnel
+**Shipped but unreleased — on `main` after v0.10.0-beta.2:**
+- The MCP-over-ACP reverse tunnel, currently consumed by [browser control](./browser-control-from-chat.md). Agent-to-client request direction now exists as tunnel plumbing only.
+
+**Still open:**
+- General `session/request_permission` relay for chat-facing tool consent
+- Progressive streaming and structured `tool_call` / `tool_call_update` session updates
+- `session/load` history replay and session administration
 
 **Phase 3 and later:**
-- `session/load` history replay and session administration
 - Thought chunks and plans
 - Filesystem, terminal, image, and audio support
 - Streamable HTTP (POST + SSE) transport
@@ -124,6 +128,7 @@ Multi-agent fan-out remains a client-side concern and is explicitly out of scope
 - [Which Adapter?](../04-decision-trees/which-adapter.md) — chat adapters versus the ACP endpoint
 - Upstream: `docs/adr/acp-server-websocket-base.md` — Phase 1 decision
 - Upstream: `docs/adr/acp-server-websocket.md` — full vision
-- Upstream: `docs/adr/acp-server-websocket-mcp-browser.md` — MCP and browser follow-up
+- Upstream: `docs/adr/acp-server-websocket-reverse-mcp.md` — accepted reverse MCP tunnel design
+- [Let Your Agent Drive the Browser](./browser-control-from-chat.md) — the shipped tunnel consumer
 - Upstream: `docs/acp-official-methods.md` — official method matrix
 - [PR #1418](https://github.com/openabdev/openab/pull/1418)

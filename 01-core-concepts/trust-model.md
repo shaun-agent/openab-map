@@ -92,6 +92,14 @@ OpenAB doesn't enforce this itself — that's the deployment layer's job. Runnin
 
 Missing secrets cause a hard exit at boot — fail-closed, never fail-open.
 
+## Loopback MCP and ACP Surfaces
+
+> **Version gate:** Both surfaces below are unreleased — on `main` after v0.10.0-beta.2.
+
+The [OAB MCP Facade](./mcp-facade.md) binds to loopback and is unauthenticated by design: the host or pod boundary is the trust boundary. Any colocated process can invoke non-session capabilities. Session-bound sources, including browser control, are hidden unless the request carries the opaque per-session bearer injected as `OPENAB_SESSION_TOKEN`.
+
+The `/acp` endpoint has a separate local-process edge. In its keyless loopback default—no `OPENAB_ACP_AUTH_KEY`, empty origin allowlist—a request without an `Origin` header is admitted. A local non-browser process can therefore connect and publish callable `type: "acp"` MCP tool servers through the reverse tunnel. Use transport authentication or ensure every colocated process is trusted; there is no operator allowlist for those published servers.
+
 ## Thread Ownership (Future)
 
 A planned feature: only the user who started a thread can `/reset` it or transfer it to another bot. Not yet enforced — currently any user in the channel can reset any thread.
