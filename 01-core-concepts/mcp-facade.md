@@ -1,6 +1,6 @@
 # OAB MCP Facade — Two Tools to Rule Them All
 
-> **Version gate:** Unreleased — on `main` after v0.10.0-beta.2.
+> **Version gate:** Released in v0.10.0-beta.3.
 
 The OAB MCP Facade is a loopback Streamable HTTP MCP server that turns all of an agent's configured capabilities into two agent-facing tools:
 

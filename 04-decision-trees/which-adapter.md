@@ -28,7 +28,7 @@ flowchart TD
 You need the gateway when running any of:
 - Telegram
 - LINE
-- LINE WORKS *(unreleased — on `main` after v0.10.0-beta.2)*
+- LINE WORKS *(v0.10.0-beta.3+)*
 - Feishu / Lark
 - Google Chat
 - WeCom
@@ -70,7 +70,7 @@ Use separate pods when:
 | Slack | ✓ | ✓ | — | — | ✓ |
 | Telegram | simulated | — | — | ✓ | — |
 | LINE | simulated | — | — | — | — |
-| LINE WORKS *(unreleased — on `main` after v0.10.0-beta.2)* | — | — | — | ✓ | — |
+| LINE WORKS *(v0.10.0-beta.3+)* | — | — | — | ✓ | — |
 | Feishu | ✓ | ✓ | — | — | ✓ |
 | Teams | ✓ | limited | — | — | ✓ |
 

@@ -83,4 +83,4 @@ OpenAB's directive parser:
 - Source: `crates/openab-core/src/directives.rs` — parser implementation
 - Docs: `docs/output-directives.md` — full output directive reference
 - Docs: `docs/control-directives.md` — full control directive reference
-- [Multi-Agent](./multi-agent-model.md) — how `reply_to` enables bot-to-bot threading
+- [Multi-Agent](../02-mental-models/multi-agent.md) — how `reply_to` enables bot-to-bot threading
