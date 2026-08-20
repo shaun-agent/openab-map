@@ -94,7 +94,7 @@ Missing secrets cause a hard exit at boot — fail-closed, never fail-open.
 
 ## Loopback MCP and ACP Surfaces
 
-> **Version gate:** Both surfaces below are unreleased — on `main` after v0.10.0-beta.2.
+> **Version gate:** The `/acp` endpoint shipped in v0.10.0-beta.2. v0.10.0-beta.3 added the OAB MCP Facade and the reverse-MCP tunnel capability on `/acp`.
 
 The [OAB MCP Facade](./mcp-facade.md) binds to loopback and is unauthenticated by design: the host or pod boundary is the trust boundary. Any colocated process can invoke non-session capabilities. Session-bound sources, including browser control, are hidden unless the request carries the opaque per-session bearer injected as `OPENAB_SESSION_TOKEN`.
 

@@ -1,80 +1,71 @@
 # Latest Change Digest
 
-> Auto-updated. Source range: `9672700` → `3ace7de3` (openab `main`)
-> **Unreleased on `main` after v0.10.0-beta.2 — expected in the next beta.**
+> Auto-updated. Source range: `3ace7de3` → `280db4db` (openab `main`)
 > See [`.sync-state`](../.sync-state)
 
 ---
 
-## New subsystem: OAB MCP Facade
+## v0.10.0-beta.3 Released
 
-**PRs:** #1448, #1453, #1454, #1450, #1446
+**Commit:** `d64c678f` — PR #1466
 
-OpenAB now has a loopback Streamable HTTP MCP facade that presents every configured downstream provider through only `search_capabilities` and `execute_capability`. Providers come from layered `mcp.json`; filters, JSON-Schema validation, timeouts, secret redaction, and `mcp.audit` logging apply before native downstream `tools/call` dispatch.
+The v0.10.0-beta.3 tag is a chart `version` and `appVersion` bump, but its ancestry makes the previous feature wave officially released:
 
-**Key things to know:**
-- `[mcp]` enables `127.0.0.1:8848/mcp`; non-loopback binds are refused, and a config containing only `[mcp]` supports facade-only `openab run` deployments.
-- The facade has no general auth layer. The host or pod is the trust boundary, while session-bound sources require the broker-minted `OPENAB_SESSION_TOKEN` bearer.
-- OpenAB writes `.openab/mcp-facade.json` but never edits a coding CLI's own MCP settings.
-- `mcp.audit` is a bare tracing target: `RUST_LOG=openab=debug` misses it unless `mcp.audit=info` is added explicitly.
-- It complements rather than replaces octobroker: pod-level personal capabilities can include fleet-level octobroker as a downstream.
+- OAB MCP Facade
+- Browser control through MCP-over-ACP
+- LINE WORKS gateway adapter
+- Native Gmail adapter
 
-**What changed in the map:**
-- Added [OAB MCP Facade](../01-core-concepts/mcp-facade.md).
-- Added both new network surfaces to [Trust Model](../01-core-concepts/trust-model.md).
-- Added the facade to the [What is OpenAB?](../00-what-is-openab.md) architecture.
+**What changed in the map:** Removed stale unreleased-on-main gates and marked these features as released in v0.10.0-beta.3 throughout the map.
 
 ---
 
-## New: Browser control via MCP-over-ACP tunnel
+## New: Agent Control Plane (`openab-cp`) — PR 1/4
 
-**PR:** #1447
+**ADR:** `448b05fb` — PR #1465
 
-ACP clients can now publish `type: "acp"` MCP servers over the existing `/acp` WebSocket. The katashiro browser extension uses the reverse tunnel to provide five DOM-semantic tools—read DOM, screenshot, navigate, click, and type—which the agent discovers as session-aware `openab-browser` capabilities behind the facade.
+**Code:** `94354a75` — PR #1469
 
-**Key things to know:**
-- Browser control requires `[mcp]`; without it, nothing starts.
-- Agent-to-client request routing exists only as tunnel plumbing. General permission relay, structured tool updates, progressive streaming, and effective backend cancellation remain open.
-- The frame cap is now 8 MiB overall for screenshots, while method-bearing frames remain limited to 1 MiB.
-- Proxy mode and `openab browser-bridge` / `OPENAB_BROWSER_MODE` were removed before merge. The facade is the only delivery path.
-- The canonical ADR is now `docs/adr/acp-server-websocket-reverse-mcp.md`; the earlier browser ADR path was deleted.
+The accepted Agent Control Plane design adds a direct, structured route for agent-to-agent delegation. Where the gateway routes human↔agent messages, the control plane routes agent↔agent messages without Discord rate limits, platform latency, formatting constraints, or orchestration noise in human channels. Chat-based bot collaboration remains the human-visible option rather than being replaced.
 
-**What changed in the map:**
-- Added [Let Your Agent Drive the Browser](../03-use-cases/browser-control-from-chat.md).
-- Updated [Drive Your Agent from an ACP Client](../03-use-cases/drive-agent-from-acp-client.md) with the tunnel, limits, and remaining roadmap.
-- Updated [ACP](../01-core-concepts/acp.md) and fixed its ADR link.
+PR 1/4 ships only the standalone `openab-cp` binary:
 
----
+- A registry with 15-second heartbeats and 45-second lease expiry
+- Routing by agent name or labels to live, non-saturated runtimes
+- Namespace-authoritative policy for initiation, depth, cycles, and cross-namespace calls
+- JSON-RPC-style `cp/register`, `cp/delegate`, `cp/delegate_result`, and `cp/cancel` frames over authenticated WebSocket
+- Server-bound identity, atomic admission, non-reusable admission tokens, ancestry chains, and per-identity quotas
 
-## New: Native Gmail adapter
+Broker-side `[control_plane]` integration, the agent-facing delegation MCP tools, and CLI workflows remain PRs 2–4. **ADR accepted; PR 1/4 shipped, but the subsystem is unreleased—on `main` after v0.10.0-beta.3.**
 
-**PRs:** #1449, #1455
-
-The hosted `gmailmcp.googleapis.com` route was abandoned because it requires Workspace Developer Preview enrollment and rejects consumer accounts. The native adapter instead serves six read/draft-only tools over Gmail's GA REST API: `search_threads`, `get_thread`, `get_message`, `list_labels`, `list_drafts`, and `create_draft`; it never sends mail.
-
-Use `openab mcp gmail-native login` for paste-back OAuth and `openab mcp gmail-native serve --listen 127.0.0.1:8850` for development. `GMAIL_OAUTH_CLIENT_ID` is required, while `GMAIL_OAUTH_CLIENT_SECRET` is optional in code for public clients. Google's Web and Desktop client types are both issued a secret and require it at the token endpoint, so in practice set both. The refresh token is stored under `gmail-native` in `~/.openab/agent/auth.json` with mode 0600. The recommended production shape registers all six tools behind the facade with an explicit include filter.
-
-**What changed in the map:** [OAB MCP Facade](../01-core-concepts/mcp-facade.md) documents Gmail as a downstream and links the upstream guide.
+**What changed in the map:** Added [Agent Control Plane](../01-core-concepts/control-plane.md) and contrasted direct delegation with chat-platform b2b in [Multi-Agent](../02-mental-models/multi-agent.md).
 
 ---
 
-## New platform: LINE WORKS
+## Proposed: `openab-pty` remote terminal runtime (ADR-only)
 
-**PR:** #1456
+**ADRs:** `2395ea1b` — PR #1478; revised by `280db4db` — PR #1480
 
-LINE WORKS joins the gateway tier with signed webhook receipt and REST sends. It supports flat 1:1 talks and channels, inbound image/audio/file attachments, audio-attachment STT, flexible-template rich messages, and receipt acknowledgements; outbound file upload is not implemented. It has no threads, reactions, or message editing; streaming is forced off. User access remains deny-all unless explicitly allowed.
+`openab-pty` is a proposed separate binary for remote, sandboxed raw-terminal access to coding CLIs in Kubernetes workspaces that survive laptop loss. It supersedes the rejected in-process PTY Mode design and defines three profiles:
 
-**What changed in the map:** Added LINE WORKS to [Adapters](../01-core-concepts/adapters.md) and [Which Adapter?](../04-decision-trees/which-adapter.md), including its capability constraints.
+1. **ACP only** — today's default, unchanged.
+2. **PTY only** — standalone remote terminal and the MVP scope.
+3. **ACP + PTY sidecar** — a demand-gated target design, not MVP; MVP always uses separate pods.
+
+The revised kill domain has two tiers: process-group termination plus subreaper/pidfd cleanup by default, with possible escapees audited until pod replacement; optional per-session cgroup v2 `cgroup.kill` hardening gives zero-survivor convergence when subtree delegation is available. Missing cgroup support fails closed only when Tier 2 is explicitly requested.
+
+Administration is remote-only on the authenticated public listener. There is no in-container admin socket or operator CLI for an escaped process to attack; the bootstrap credential is at least 256 random bits and only its hash is stored. RWO storage can support adjacent pods pinned to one node—RWX/EFS is not inherently required.
+
+The `!` marker records a breaking revision to prior ADR commitments, not shipped code: mandatory Phase-1 cgroups and the in-container operator CLI were withdrawn. The ADR remains **Proposed**, implementation is gated on at least three independent requests within 90 days plus budget, and there is zero code or workspace crate today.
+
+**What changed in the map:** Digest only. A concept page is deliberately deferred until implementation ships.
 
 ---
 
-## Docs: CLI conventions
+## Minor
 
-**PR:** #1452
-
-Top-level verbs act on the bot itself (`run`, `setup`, `set`, `get`), while noun namespaces act on subsystems (`openab mcp <addon> <action>`). Production serving is config-driven; namespace `serve` subcommands are for development only.
-
-**What changed in the map:** The convention is summarized in [OAB MCP Facade](../01-core-concepts/mcp-facade.md).
+- **Platform-schema CI hardening** (`62453ac7`, PR #1462): preserves the open contribution model, triggers conformance checks on adapter source changes plus a weekly backstop, and strengthens code-reference validation. No platform capability facts changed.
+- **agy CLI pin** (`6f1c530c`): bumped 1.1.4 → 1.1.13 with no architectural impact.
 
 ---
 

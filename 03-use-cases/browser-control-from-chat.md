@@ -1,6 +1,6 @@
 # Let Your Agent Drive the Browser (MCP-over-ACP)
 
-> **Version gate:** Unreleased — on `main` after v0.10.0-beta.2.
+> **Version gate:** New in v0.10.0-beta.3.
 
 Browser control lets an agent read, click, type, navigate, and capture screenshots in the user's real browser. The **katashiro** MV3 side-panel extension serves DOM-semantic MCP tools through a reverse MCP-over-ACP tunnel on the existing `/acp` WebSocket.
 

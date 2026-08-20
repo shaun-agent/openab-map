@@ -92,7 +92,7 @@ The gateway pattern (Tier 2) is the recommended path for new webhook-based platf
 
 ## Platform Feature Matrix
 
-> **LINE WORKS is unreleased — on `main` after v0.10.0-beta.2.** It is a gateway adapter.
+> **LINE WORKS was released in v0.10.0-beta.3.** It is a gateway adapter.
 
 | Feature | Discord | Slack | Telegram | LINE | LINE WORKS | Feishu | Teams |
 |---------|---------|-------|----------|------|------------|--------|-------|

@@ -47,7 +47,7 @@ graph LR
     subgraph OpenAB Pod
         B[Broker<br/>openab binary]
         SP[Session Pool]
-        MF["MCP Facade<br/>loopback :8848<br/>2 meta-tools<br/>unreleased on main"]
+        MF["MCP Facade<br/>loopback :8848<br/>2 meta-tools<br/>v0.10.0-beta.3+"]
     end
 
     subgraph Agents
@@ -76,7 +76,7 @@ graph LR
     OA <--> MF
 ```
 
-The MCP Facade node is **unreleased — on `main` after v0.10.0-beta.2**.
+The MCP Facade was released in **v0.10.0-beta.3**.
 
 Each agent is a subprocess. Each conversation thread is a session. OpenAB manages the pool and the routing. The agents don't know OpenAB exists.
 

@@ -28,6 +28,17 @@ graph TB
 
 KiroBot and ClaudeBot don't know each other exists at the infrastructure level. They see the same Discord channel. The `[[reply_to:ID]]` directive creates visual threading in Discord so it's clear which bot is responding to which message.
 
+## Two Agent-to-Agent Paths
+
+OpenAB is separating human-visible collaboration from machine delegation:
+
+| Path | Best for | Trade-offs | Status |
+|------|----------|------------|--------|
+| **Bot-to-bot through chat** | Collaboration humans should see, review, and join | Platform rate limits and latency, message-size/format constraints, orchestration noise in channels | Available today |
+| **Direct control-plane delegation** | Structured, low-latency tasks between OpenAB runtimes | Private infrastructure path; both runtimes must be online; not a workflow engine | ADR accepted; standalone hub shipped on `main`, but broker integration and agent-facing tools remain unreleased |
+
+Chat b2b remains a first-class mechanism rather than a legacy path. The [Agent Control Plane](../01-core-concepts/control-plane.md) is complementary: it will route private `cp/delegate` work directly when human visibility is not the goal. PR 1/4 ships the registry/router/policy hub only; end-to-end runtime delegation arrives in later PRs.
+
 ## Bot-to-Bot Turn Flow
 
 ```mermaid
