@@ -44,6 +44,18 @@ A non-loopback address is refused at startup. The `[mcp]` table contains listene
 - `~/.openab/agent/mcp.json` — global providers
 - `./.openab/agent/mcp.json` — project providers
 
+### Custom HTTP Headers
+
+> **Version gate:** Unreleased — on `main` after v0.10.0-beta.3.
+
+HTTP server entries in `mcp.json` can attach credentials or routing metadata:
+
+```json
+"headers": { "X-API-Key": "${env:REMOTE_MCP_API_KEY}" }
+```
+
+`${env:VAR}` interpolation applies only to header values; names stay literal. Names are case-insensitive, case-variant duplicates are rejected, and transport-owned `Accept`, `MCP-Session-Id`, and `Last-Event-ID` cannot be configured. `MCP-Protocol-Version` is allowed but replaced with the negotiated version. A malformed header or missing environment variable fails only that server without charging its circuit breaker; other providers continue. Automatic redirects are disabled for MCP and OAuth requests so custom credentials are never replayed to a redirect target.
+
 Per-provider `tool_filter` include/exclude rules make excluded tools invisible to discovery and reject them at execution. For downstream servers configured in `mcp.json`, the facade also validates arguments, enforces timeouts, redacts secrets, and emits an audit log. In-process session-bound sources such as browser control instead receive facade argument validation and audit logging, plus the separate `[mcp] tunnel_timeout_seconds`; the full downstream policy path does not apply.
 
 An adapter-less config containing only `[mcp]` is valid. `openab run -c facade-only.toml` can therefore serve the facade on coding-CLI-only hosts, in development loops, or on CI runners. The former `openab-agent mcp-facade` subcommand no longer exists.
