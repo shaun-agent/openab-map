@@ -34,6 +34,8 @@ You need the gateway when running any of:
 - WeCom
 - Microsoft Teams
 
+**Google Chat** *(v0.10.0-beta.4+)*: keyless ADC auth via `GOOGLE_CHAT_USE_ADC` requires `GOOGLE_CHAT_ADC_TARGET_SERVICE_ACCOUNT` (config `adc_target_service_account`), a dedicated Chat-app service account distinct from the attached runtime SA. The runtime SA impersonates that target through IAM Credentials `generateAccessToken`; Google prohibits self-impersonation (`FAILED_PRECONDITION`), and `use_adc=true` without a target fails closed. A successfully loaded SA key wins; an unloadable configured key falls back to ADC with a logged identity switch; static token is last resort. Replies are send-once, without streaming edits, because the platform limits writes to 1/second/space.
+
 ## Unified Build vs Separate Gateway Pod
 
 **Unified build** (default for simple deployments):

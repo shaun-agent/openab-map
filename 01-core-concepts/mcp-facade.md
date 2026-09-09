@@ -46,7 +46,7 @@ A non-loopback address is refused at startup. The `[mcp]` table contains listene
 
 ### Custom HTTP Headers
 
-> **Version gate:** Unreleased — on `main` after v0.10.0-beta.3.
+> **Version gate:** New in v0.10.0-beta.4.
 
 HTTP server entries in `mcp.json` can attach credentials or routing metadata:
 
