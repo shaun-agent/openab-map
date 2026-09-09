@@ -46,7 +46,7 @@ The agents doing the review run through openab itself — the same system being 
 ## Tracked Source
 
 - **Repo:** `openabdev/openab`
-- **Branch:** `main` (beta release tags, currently `v0.10.0-beta.3`)
+- **Branch:** `main` (beta release tags, currently `v0.10.0-beta.4`)
 - **Last synced SHA:** see [`.sync-state`](./.sync-state)
 
 ---

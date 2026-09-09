@@ -1,6 +1,6 @@
 # Agent Control Plane — Direct Agent-to-Agent Delegation
 
-> **Status:** ADR accepted; PR 1/4 shipped the standalone `openab-cp` binary—registry, router, and policy. Broker integration, agent-facing tools, and CLI land in PRs 2–4. **Unreleased — on `main` after v0.10.0-beta.3.**
+> **Status:** ADR accepted; PR 1/4 shipped the standalone `openab-cp` binary—registry, router, and policy; PR 2/4 shipped its observer/lobby read surface. Runtime integration, agent-facing tools, CLI, and client relay streaming remain pending. **Unreleased — on `main` after v0.10.0-beta.4.**
 
 The symmetry is simple: **the gateway routes human↔agent messages; the control plane routes agent↔agent messages.**
 
@@ -40,7 +40,7 @@ flowchart LR
 
 | Part | Responsibility |
 |------|----------------|
-| **Registry** | Runtimes register outbound with namespace, name, type (`primary` or `worker`), labels, and `max_delegated_sessions`. Heartbeats run every 15 seconds; leases expire after 45 seconds. |
+| **Registry** | Runtimes register outbound with namespace, name, type (`primary`, `worker`, or `observer`), labels, and `max_delegated_sessions`. Heartbeats run every 15 seconds; leases expire after 45 seconds. |
 | **Router** | Resolves a target by name or labels to a live, non-saturated instance, forwards the delegation, and routes the result back. |
 | **Policy** | Enforces namespace policy centrally. By default only primaries may initiate, maximum depth is 1, worker→worker is denied, cycles are rejected, and cross-namespace delegation is denied. |
 
@@ -57,6 +57,8 @@ Frames are JSON-RPC-style messages over WebSocket:
 | `cp/delegate` | Sends a prompt to a target selected by name or labels. |
 | `cp/delegate_result` | Returns the delegated task result to its caller. |
 | `cp/cancel` | Cancels an admitted delegation. |
+| `cp/event` | Pushes namespace lifecycle and delegation notifications to observers. |
+| `cp/list_agents` | Returns the caller's namespace roster; available to any registered client, including observers. |
 
 The caller creates `delegation_id`, which is the idempotency key. A delegation may include parent references and an absolute `deadline`. If a child deadline exceeds the parent's remaining budget, policy rejects the delegation with `DeadlineExceedsParent`; the server does not clamp it.
 
@@ -65,6 +67,22 @@ After admission, the control plane adds facts clients cannot self-assert:
 - **`admission` token** — unique and never reused; required for results, cancellation, and parented delegation.
 - **Authenticated `from`** — derived from the credential-bound identity.
 - **Full `chain`** — delegation ancestry used for depth and cycle checks.
+
+## Observer Surface (Lobby)
+
+An `observer` is a third identity type, configured with `type = "observer"` in `[[agents]]`. It is a read-only lobby client: the same `cp/register`-first-frame rule and heartbeat lease apply. Observers are never selectable as delegation targets and are unconditionally refused as initiators—no policy override relaxes this.
+
+`cp/event` is a JSON-RPC notification pushed to every observer in a namespace. Event kinds are `agent_registered`, `agent_deregistered`, `delegation_requested`, `delegation_completed`, and `delegation_cancelled`. The envelope is a JSON-RPC 2.0 notification (`method: "cp/event"`, no `id`) whose `params` carry `seq`, `ts`, `namespace`, and flattened event-specific fields. Each namespace has a monotonic, dense `seq`; a gap means the client should resync via `cp/list_agents`. Sequence numbers are not durable across control-plane restarts. Delivery is best-effort through bounded queues, with no replay.
+
+Any registered client can call `cp/list_agents` to fetch its own namespace's roster: name, type, instance ID, labels, and active/max sessions. This is a working Phase 1 read surface, not just a protocol reservation. Intermediate session/turn streaming to observers remains future scope.
+
+Three settings control the surface:
+
+| Setting | Default / behavior |
+|---------|--------------------|
+| `max_event_excerpt_bytes` | 4096 bytes; validated at no more than 64 KiB. |
+| `max_observers_per_namespace` | 16 |
+| `[namespaces.<ns>].metadata_only` | `false`; when `true`, events omit prompt/result excerpts, worker error text, and cancel reasons. CP-synthesized diagnostics still appear. |
 
 ## Important `cp.toml` Settings
 
@@ -92,12 +110,17 @@ Loopback is the safe default. PR 1/4 already includes control-plane-generated re
 
 **Shipped in PR 1/4:** the standalone `openab-cp` binary and its protocol, config, server, registry, router, and policy implementation.
 
-**Not shipped yet (PRs 2–4):**
+**Shipped in PR 2/4:** observer identities, sequenced `cp/event` notifications, and the `cp/list_agents` roster inside the CP server—not broker integration.
 
-- OAB-side `[control_plane]` client configuration and runtime connection
-- Agent-facing `spawn_agent`, `check_delegation`, `list_agents`, and `cancel_delegation` tools
+**Not shipped yet (follow-up slices):**
+
+- OAB-side `[control_plane]` client configuration, runtime connection, and registration
+- Agent-facing `spawn_agent`, `check_delegation`, `list_agents`, and `cancel_delegation` MCP facade tools (ADR §7: PR 3/4)
 - The Unix-domain-socket, per-session tool injection path; `OPENAB_CP_KEY` must never enter the agent environment
 - Control-plane CLI workflows
+- Client relay streaming, including intermediate session/turn updates to observers
+
+**Deployment reality:** Nothing connects to this server in a stock deployment; no packaged container image exists yet.
 
 The planned agent tools follow the [MCP Facade](./mcp-facade.md) pattern but are a separate tool set injected through ACP `session/new` `mcpServers`.
 
@@ -113,6 +136,8 @@ This is not a chat adapter and does not replace OpenAB sessions. Adapters remain
 
 ## Further Reading
 
+- Upstream: `docs/control-plane.md`
 - Upstream: `docs/adr/agent-control-plane.md`
+- Upstream: `crates/openab-cp/cp.toml.example`
 - [Multi-Agent](../02-mental-models/multi-agent.md) — visible collaboration versus direct delegation
 - [OAB MCP Facade](./mcp-facade.md) — the pattern planned for agent-facing delegation tools

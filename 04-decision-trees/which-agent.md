@@ -18,7 +18,8 @@ flowchart TD
     OPENAI -->|OpenAI native| CODEX[codex-acp\nOpenAI Codex]
     OPENAI -->|Multi-model with MCP| OC[opencode acp\nOpenCode]
 
-    GOOGLE --> GEM[gemini --acp\nGemini CLI]
+    GOOGLE -->|Enterprise Code Assist or API key| GEM[gemini --acp\nGemini CLI]
+    GOOGLE -->|Individual AI Pro / Ultra / free| AGY[agy-acp\nAntigravity CLI]
 
     FLEX -->|Best tool support, RBAC| KIRO[kiro-cli acp\nKiro — recommended default]
     FLEX -->|Anthropic preferred| CC
@@ -35,7 +36,7 @@ flowchart TD
 | **Claude Code** | `claude-agent-acp` | Anthropic models, rich tool use | Production |
 | **openab-agent** | `openab-agent` | Lightweight, skills, MCP client, xAI/SuperGrok OAuth | Beta |
 | **Codex** | `codex-acp` | OpenAI models, multi-model | Production |
-| **Gemini** | `gemini --acp` | Google models | Production |
+| **Gemini** | `gemini --acp` | Enterprise Code Assist or API-key auth; individual accounts must migrate to Antigravity (see notice below) | Production |
 | **OpenCode** | `opencode acp` | OpenAI + MCP, open source | Production |
 | **MiMo-Code** | `mimo acp` | Anthropic Claude, MiMo features | Production |
 | **Kimi Code** | `kimi acp` | Moonshot AI Kimi models, multi-provider | Production |
@@ -43,9 +44,14 @@ flowchart TD
 | **Cursor** | `cursor-agent acp` | Cursor editor users | Beta |
 | **Grok Build** | `grok agent stdio` | xAI models via Grok CLI | Beta |
 | **Devin** | `devin acp` | Autonomous software engineering | Production |
-| **Hermes** | `hermes-acp` | NousResearch models | Beta |
 | **Pi** | `pi-acp` | Pi agent | Beta |
-| **Antigravity** | `agy-acp` | Local, via bundled adapter | Beta |
+| **Antigravity** | `agy-acp` | Local, via bundled adapter; Discord `/models` dropdown + `[pool] default_config_options` | Beta |
+
+## Google Accounts and Model Selection
+
+> **Deployer notice — v0.10.0-beta.4 docs:** Since June 18, 2026, Gemini CLI no longer serves individual Google AI Pro, Ultra, or free-tier accounts. Google recommends migrating those users to Antigravity CLI. Enterprise users with Gemini Code Assist licenses and API-key authentication remain supported. Source: `docs/gemini.md`.
+
+Antigravity's `agy-acp` returns model `configOptions` for Discord's `/models` dropdown. It fetches live choices from `agy models`, with a cache and static fallback. Model selection uses per-session `--model`; set a default with `[pool] default_config_options = { model = "..." }`. Source: `docs/antigravity.md` (v0.10.0-beta.4 docs).
 
 ## The Default Recommendation: Kiro
 
