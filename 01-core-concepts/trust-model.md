@@ -104,9 +104,19 @@ The `/acp` endpoint has a separate local-process edge. In its keyless loopback d
 
 A planned feature: only the user who started a thread can `/reset` it or transfer it to another bot. Not yet enforced — currently any user in the channel can reset any thread.
 
+## Beyond Identity: Trusting the Agent with Compute
+
+The three layers above govern *who may talk to the agent*. The emerging fourth question —
+*what hardware the agent may touch* — is answered by the sandbox/reverse-attach design in
+the openab ecosystem: disposable sandboxes for toolchains, and explicit TTL'd grants when
+the agent needs your real machine, with the connection always dialed *from* your computer
+*into* the sandbox, never the reverse. See
+[Sandboxes & Computer Grants](./computer-grants.md).
+
 ## Further Reading
 
 - Source: `crates/openab-core/src/trust.rs`
 - Source: `crates/openab-core/src/secrets.rs`
 - Docs: `docs/secrets-management.md`
 - [Multi-Agent](../02-mental-models/multi-agent.md) — bot trust in practice
+- [Sandboxes & Computer Grants](./computer-grants.md) — compute-level trust

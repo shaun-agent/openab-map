@@ -1,6 +1,6 @@
 # Agent Control Plane — Direct Agent-to-Agent Delegation
 
-> **Status:** ADR accepted; PR 1/4 shipped the standalone `openab-cp` binary—registry, router, and policy; PR 2/4 shipped its observer/lobby read surface. Runtime integration, agent-facing tools, CLI, and client relay streaming remain pending. **Unreleased — on `main` after v0.10.0-beta.4.**
+> **Status:** ADR accepted; PR 1/4 shipped the standalone `openab-cp` binary—registry, router, and policy; PR 2/4 shipped its observer/lobby read surface. Both are **released in v0.10.0-beta.5**. Runtime integration, agent-facing tools, CLI, and client relay streaming remain pending.
 
 The symmetry is simple: **the gateway routes human↔agent messages; the control plane routes agent↔agent messages.**
 

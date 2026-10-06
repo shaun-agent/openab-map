@@ -13,7 +13,7 @@ This repo is auto-updated by an agent workflow that watches beta releases on ope
 | Layer | What it answers |
 |-------|----------------|
 | [00 · What is OpenAB](./00-what-is-openab.md) | One-page pitch. The problem, the solution, what it is not. |
-| [01 · Core Concepts](./01-core-concepts/) | The 9 ideas you must internalize before anything clicks. Includes the [OAB MCP Facade](./01-core-concepts/mcp-facade.md), [Agent Control Plane](./01-core-concepts/control-plane.md) *(partial, unreleased)*, and [reactions mapping](./01-core-concepts/reactions-mapping.md). |
+| [01 · Core Concepts](./01-core-concepts/) | The 10 ideas you must internalize before anything clicks. Includes the [OAB MCP Facade](./01-core-concepts/mcp-facade.md), [Agent Control Plane](./01-core-concepts/control-plane.md) *(Phase 1 released in beta.5)*, [reactions mapping](./01-core-concepts/reactions-mapping.md), and [Sandboxes & Computer Grants](./01-core-concepts/computer-grants.md) *(ecosystem: openab-pty + instance-mcp)*. |
 | [02 · Mental Models](./02-mental-models/) | How the pieces fit — data flows, topology, sequences. |
 | [03 · Use Cases](./03-use-cases/) | "I want to do X" → here's how. Includes [driving an agent from an ACP client](./03-use-cases/drive-agent-from-acp-client.md), [browser control from chat](./03-use-cases/browser-control-from-chat.md), [PR contribution lifecycle](./03-use-cases/contributing-pr-lifecycle.md), and the [Jelli governed community bot setup](./03-use-cases/run-a-governed-community-bot.md). |
 | [04 · Decision Trees](./04-decision-trees/) | Should I use X or Y? Structured branching choices. |
@@ -46,7 +46,8 @@ The agents doing the review run through openab itself — the same system being 
 ## Tracked Source
 
 - **Repo:** `openabdev/openab`
-- **Branch:** `main` (beta release tags, currently `v0.10.0-beta.4`)
+- **Branch:** `main` (beta release tags, currently `v0.10.0-beta.5`)
+- **Sibling repos tracked for the sandbox/computer-grants concept:** `openabdev/openab-pty`, `openabdev/instance-mcp`
 - **Last synced SHA:** see [`.sync-state`](./.sync-state)
 
 ---
