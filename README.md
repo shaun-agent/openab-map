@@ -50,6 +50,17 @@ The agents doing the review run through openab itself — the same system being 
 - **Sibling repos tracked for the sandbox/computer-grants concept:** `openabdev/openab-pty`, `openabdev/instance-mcp`
 - **Last synced SHA:** see [`.sync-state`](./.sync-state)
 
+### Where each repo is covered
+
+The map is organized by **concept, not by repo** — there is no per-repo file. Use this
+index to find where a given source repo's behavior is documented:
+
+| Source repo | Primary coverage | Also referenced in |
+|-------------|------------------|--------------------|
+| `openabdev/openab` | Everything under layers 00–04 | [Change Digest](./05-change-digest/LATEST.md) |
+| `openabdev/openab-pty` (sandbox runtime: locked-down container shells over a WireGuard tailnet, `oab-toolchain` image) | [Sandboxes & Computer Grants](./01-core-concepts/computer-grants.md) — Piece 1 | [Change Digest](./05-change-digest/LATEST.md) status check; [Trust Model](./01-core-concepts/trust-model.md) "Beyond Identity" |
+| `openabdev/instance-mcp` (computer-side executor: reverse attach, tool-profile grants, switchboard mode) | [Sandboxes & Computer Grants](./01-core-concepts/computer-grants.md) — Pieces 2–4 | [Change Digest](./05-change-digest/LATEST.md) status check; [Trust Model](./01-core-concepts/trust-model.md) "Beyond Identity" |
+
 ---
 
 ## Contributing
